@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .section h2 {
+            margin-bottom: 15px;
+            color: #444;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        input, select, button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        button {
+            background-color: #4caf50;
+            color: white;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #388e3c;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .actions button {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .borrow {
+            background-color: #2196F3;
+        }
+        
+        .borrow:hover {
+            background-color: #0b7dda;
+        }
+        
+        .return {
+            background-color: #ff9800;
+        }
+        
+        .return:hover {
+            background-color: #e68a00;
+        }
+        
+        .remove {
+            background-color: #f44336;
+        }
+        
+        .remove:hover {
+            background-color: #da190b;
+        }
+        
+        .search-bar {
+            display: flex;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+        
+        .search-bar input {
+            flex: 1;
+        }
+        
+        .status-available {
+            color: green;
+            font-weight: bold;
+        }
+        
+        .status-borrowed {
+            color: red;
+            font-weight: bold;
+        }
+        
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+        
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Library Management System</h1>
+        
+        <div id="message" class="message"></div>
+        
+        <div class="section">
+            <h2>Add New Book</h2>
+            <form id="add-book-form">
+                <input type="text" id="title" placeholder="Book Title" required>
+                <input type="text" id="author" placeholder="Author Name" required>
+                <select id="status">
+                    <option value="available">Available</option>
+                    <option value="borrowed">Borrowed</option>
+                </select>
+                <button type="submit">Add Book</button>
+            </form>
+        </div>
+        
+        <div class="section">
+            <h2>Book Management</h2>
+            <div class="search-bar">
+                <input type="text" id="search" placeholder="Search by title or author">
+                <button id="search-btn">Search</button>
+                <button id="show-all-btn">Show All</button>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="book-list">
+                    <!-- Book entries will be added here dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Book library array to store all books
+        let library = [
+            { title: "To Kill a Mockingbird", author: "Harper Lee", status: "available" },
+            { title: "1984", author: "George Orwell", status: "borrowed" },
+            { title: "The Great Gatsby", author: "F. Scott Fitzgerald", status: "available" }
+        ];
+
+        // DOM Elements
+        const addBookForm = document.getElementById('add-book-form');
+        const bookList = document.getElementById('book-list');
+        const searchInput = document.getElementById('search');
+        const searchBtn = document.getElementById('search-btn');
+        const showAllBtn = document.getElementById('show-all-btn');
+        const messageDiv = document.getElementById('message');
+
+        // Function to display message
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            // Hide message after 3 seconds
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // Function to render books in the table
+        function renderBooks(books = library) {
+            bookList.innerHTML = '';
+            
+            if (books.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="4">No books found</td>';
+                bookList.appendChild(row);
+                return;
+            }
+            
+            books.forEach(book => {
+                const row = document.createElement('tr');
+                
+                // Set status class for styling
+                const statusClass = book.status === 'available' ? 'status-available' : 'status-borrowed';
+                
+                row.innerHTML = `
+                    <td>${book.title}</td>
+                    <td>${book.author}</td>
+                    <td class="${statusClass}">${book.status}</td>
+                    <td class="actions">
+                        ${book.status === 'available' ? 
+                            '<button class="borrow">Borrow</button>' : 
+                            '<button class="return">Return</button>'}
+                        <button class="remove">Remove</button>
+                    </td>
+                `;
+                
+                // Add event listeners to buttons
+                const borrowBtn = row.querySelector('.borrow');
+                const returnBtn = row.querySelector('.return');
+                const removeBtn = row.querySelector('.remove');
+                
+                if (borrowBtn) {
+                    borrowBtn.addEventListener('click', () => borrowBook(book.title));
+                }
+                
+                if (returnBtn) {
+                    returnBtn.addEventListener('click', () => returnBook(book.title));
+                }
+                
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', () => removeBook(book.title));
+                }
+                
+                bookList.appendChild(row);
+            });
+        }
+
+        // Function to add a new book
+        function addBook(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('title').value.trim();
+            const author = document.getElementById('author').value.trim();
+            const status = document.getElementById('status').value;
+            
+            // Check if book with same title already exists
+            if (library.some(book => book.title.toLowerCase() === title.toLowerCase())) {
+                showMessage('A book with this title already exists!', 'error');
+                return;
+            }
+            
+            // Add new book to library
+            library.push({ title, author, status });
+            
+            // Clear form
+            addBookForm.reset();
+            
+            // Update display
+            renderBooks();
+            showMessage('Book added successfully!', 'success');
+        }
+
+        // Function to remove a book
+        function removeBook(title) {
+            if (confirm(`Are you sure you want to remove "${title}" from the library?`)) {
+                library = library.filter(book => book.title !== title);
+                renderBooks();
+                showMessage(`"${title}" has been removed from the library.`, 'success');
+            }
+        }
+
+        // Function to borrow a book
+        function borrowBook(title) {
+            const bookIndex = library.findIndex(book => book.title === title);
+            
+            if (bookIndex !== -1) {
+                library[bookIndex].status = 'borrowed';
+                renderBooks();
+                showMessage(`"${title}" has been marked as borrowed.`, 'success');
+            }
+        }
+
+        // Function to return a book
+        function returnBook(title) {
+            const bookIndex = library.findIndex(book => book.title === title);
+            
+            if (bookIndex !== -1) {
+                library[bookIndex].status = 'available';
+                renderBooks();
+                showMessage(`"${title}" has been returned and is now available.`, 'success');
+            }
+        }
+
+        // Function to search books
+        function searchBooks() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            
+            if (searchTerm === '') {
+                renderBooks();
+                return;
+            }
+            
+            const filteredBooks = library.filter(book => 
+                book.title.toLowerCase().includes(searchTerm) || 
+                book.author.toLowerCase().includes(searchTerm)
+            );
+            
+            renderBooks(filteredBooks);
+        }
+
+        // Event Listeners
+        addBookForm.addEventListener('submit', addBook);
+        searchBtn.addEventListener('click', searchBooks);
+        showAllBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            renderBooks();
+        });
+        
+        // Initial render
+        renderBooks();
+    </script>
+</body>
+</html>
